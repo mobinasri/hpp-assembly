@@ -3,9 +3,12 @@ version 1.0
 workflow HppAssemblyFlow {
     input {
         String sampleName
+        String patID
+        String matID
         Array[File] hifiReads
         File patReads
         File matReads
+        File? inputAncillaryFiles
         File? refFasta
         Int bloomSize=37
         String dockerImage = "quay.io/masri2019/hppassembly:latest"
@@ -18,7 +21,8 @@ workflow HppAssemblyFlow {
 
     call KmerCountTask as patKmerCount{
         input:
-            sampleName = sampleName,
+            sampleName = patID,
+            patOrMat = "pat",
             refFasta = refFasta,
             readFile = patReads,
             bloomSize = bloomSize,
@@ -32,7 +36,8 @@ workflow HppAssemblyFlow {
 
     call KmerCountTask as matKmerCount{
         input:
-            sampleName = sampleName,
+            sampleName = matID,
+            patOrMat = "mat",
             refFasta = refFasta,
             readFile = matReads,
             bloomSize = bloomSize,
@@ -50,6 +55,7 @@ workflow HppAssemblyFlow {
             matYak = matKmerCount.outputYak,
             hifiReads = hifiReads,
             sampleName = sampleName,
+            inputAncillaryFiles = inputAncillaryFiles,
             memSize = memSize,
             dockerImage = dockerImage,
             threadCount = threadCount,
@@ -76,6 +82,8 @@ workflow HppAssemblyFlow {
         File matFasta = GfaTask.outputMatFasta
         File patGfa = GfaTask.outputPatGfa
         File matGfa = GfaTask.outputMatGfa
+        File patYak = patKmerCount.outputYak
+        File matYak = matKmerCount.outputYak
         File ancillaryFiles = HifiasmTask.outputAncillaryFiles
     }
 }
@@ -85,6 +93,7 @@ task KmerCountTask {
         File? refFasta
         File readFile
         String sampleName
+        String patOrMat
         Int bloomSize
         # runtime configurations    
         Int memSize
@@ -108,13 +117,13 @@ task KmerCountTask {
 
         # Kmer counting with https://github.com/lh3/yak.
         if [[ ~{readFile} =~ .*f(ast)?q\.gz$ ]] ; then
-            yak count -t~{threadCount} -b~{bloomSize} -o ~{sampleName}.yak <(zcat ~{readFile}) <(zcat ~{readFile})
+            yak count -t~{threadCount} -b~{bloomSize} -o ~{patOrMat}.~{sampleName}.yak <(zcat ~{readFile}) <(zcat ~{readFile})
         elif [[ ~{readFile} =~ .*f(ast)?q$ ]] ; then
-            yak count -t~{threadCount} -b~{bloomSize} -o ~{sampleName}.yak <(cat ~{readFile}) <(cat ~{readFile})
+            yak count -t~{threadCount} -b~{bloomSize} -o ~{patOrMat}.~{sampleName}.yak <(cat ~{readFile}) <(cat ~{readFile})
         elif [[ ~{readFile} =~ .*cram$ ]] ; then
-            yak count -t~{threadCount} -b~{bloomSize} -o ~{sampleName}.yak <(samtools fastq --reference ~{refFasta} ~{readFile}) <(samtools fastq --reference ~{refFasta} ~{readFile})
+            yak count -t~{threadCount} -b~{bloomSize} -o ~{patOrMat}.~{sampleName}.yak <(samtools fastq --reference ~{refFasta} ~{readFile}) <(samtools fastq --reference ~{refFasta} ~{readFile})
         elif [[ ~{readFile} =~ .*bam$ ]] ; then
-            yak count -t~{threadCount} -b~{bloomSize} -o ~{sampleName}.yak <(samtools fastq ~{readFile}) <(samtools fastq ~{readFile})
+            yak count -t~{threadCount} -b~{bloomSize} -o ~{patOrMat}.~{sampleName}.yak <(samtools fastq ~{readFile}) <(samtools fastq ~{readFile})
         else
             echo "UNSUPPORTED READ FORMAT (expect .fq .fastq .fq.gz .fastq.gz .cram .bam): $(basename ~{readFile})"
             exit 1
@@ -131,7 +140,7 @@ task KmerCountTask {
     }
 
     output {
-        File outputYak = "~{sampleName}.yak"
+        File outputYak = "~{patOrMat}.~{sampleName}.yak"
     }
 }
 
@@ -141,6 +150,7 @@ task HifiasmTask {
         File patYak
         File matYak
         String sampleName
+        File? inputAncillaryFiles
         # runtime configurations
         Int memSize
         Int threadCount
@@ -160,6 +170,11 @@ task HifiasmTask {
         # echo each line of the script to stdout so we can see what is happening
         # to turn off echo do 'set +o xtrace'
         set -o xtrace
+
+        if [ ! -v ~{inputAncillaryFiles} ]; then
+            tar -xvzf ~{inputAncillaryFiles} --strip-components 1
+            rm -rf ~{inputAncillaryFiles}
+        fi
 
         mkdir fastqDir
         # concatenate all fastq files to a single fastq file in "fastqDir"
