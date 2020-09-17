@@ -10,7 +10,7 @@ ENV PATH="/home/apps/samtools-1.10:$PATH"
 RUN cd /home/apps && git clone https://github.com/lh3/yak && cd yak && make
 ENV PATH="/home/apps/yak:$PATH"
 
-RUN cd /home/apps && git clone --branch v0.9 https://github.com/chhylp123/hifiasm && cd hifiasm && make
+RUN cd /home/apps && git clone --branch v0.11 https://github.com/chhylp123/hifiasm && cd hifiasm && make
 ENV PATH="/home/apps/hifiasm:$PATH"
 
 RUN cd /home/apps && git clone --branch v0.4 https://github.com/lh3/gfatools && cd gfatools && make
