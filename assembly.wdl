@@ -8,7 +8,7 @@ workflow HppAssemblyFlow {
         Array[File] hifiReads
         File patReads
         File matReads
-        File? inputAncillaryFiles
+        File? inputBinFiles
         File? refFasta
         Int bloomSize=37
         String dockerImage = "quay.io/masri2019/hppassembly:latest"
@@ -55,7 +55,7 @@ workflow HppAssemblyFlow {
             matYak = matKmerCount.outputYak,
             hifiReads = hifiReads,
             sampleName = sampleName,
-            inputAncillaryFiles = inputAncillaryFiles,
+            inputBinFiles = inputBinFiles,
             memSize = memSize,
             dockerImage = dockerImage,
             threadCount = threadCount,
@@ -80,11 +80,12 @@ workflow HppAssemblyFlow {
     output {
         File patFasta = GfaTask.outputPatFasta
         File matFasta = GfaTask.outputMatFasta
-        File patGfa = GfaTask.outputPatGfa
-        File matGfa = GfaTask.outputMatGfa
         File patYak = patKmerCount.outputYak
         File matYak = matKmerCount.outputYak
-        File ancillaryFiles = HifiasmTask.outputAncillaryFiles
+        File patContigGfa = HifiasmTask.outputPatContigGfa 
+        File matContigGfa = HifiasmTask.outputMatContigGfa 
+        File rawUnitigGfa = HifiasmTask.outputRawUnitigGfa
+        File binFiles = HifiasmTask.outputBinFiles
     }
 }
 
@@ -150,7 +151,7 @@ task HifiasmTask {
         File patYak
         File matYak
         String sampleName
-        File? inputAncillaryFiles
+        File? inputBinFiles
         # runtime configurations
         Int memSize
         Int threadCount
@@ -171,9 +172,9 @@ task HifiasmTask {
         # to turn off echo do 'set +o xtrace'
         set -o xtrace
 
-        if [ ! -v ~{inputAncillaryFiles} ]; then
-            tar -xvzf ~{inputAncillaryFiles} --strip-components 1
-            rm -rf ~{inputAncillaryFiles}
+        if [ ! -v ~{inputBinFiles} ]; then
+            tar -xzf ~{inputBinFiles} --strip-components 1
+            rm -rf ~{inputBinFiles}
         fi
 
         mkdir fastqDir
@@ -200,20 +201,35 @@ task HifiasmTask {
                 echo "UNSUPPORTED READ FORMAT (expect .fq .fastq fq.gz fastq.gz .bam): ${readName}"
                 exit 1
             fi
+             rm -rf ${readFile}
         done
 
         #run trio hifiasm https://github.com/chhylp123/hifiasm
         hifiasm -o ~{sampleName} -t~{threadCount} -1 ~{patYak} -2 ~{matYak} fastqDir/~{sampleName}*
         
-        #Move other output files to a saparate folder and compress them 
-        mkdir ~{sampleName}.ancillaryFiles
-        mv *.bin ~{sampleName}.ancillaryFiles
-        mv *.noseq.gfa ~{sampleName}.ancillaryFiles
-        mv *_utg.gfa ~{sampleName}.ancillaryFiles
-        # make an archive
-        tar -cf ~{sampleName}.ancillaryFiles.tar ~{sampleName}.ancillaryFiles
+        #Move bin and gfa files to saparate folders and compress them 
+        mkdir ~{sampleName}.raw_unitig_gfa
+        mkdir ~{sampleName}.pat.contig_gfa
+        mkdir ~{sampleName}.mat.contig_gfa
+        mkdir ~{sampleName}.binFiles
+        
+        ln ~{sampleName}.dip.r_utg.* ~{sampleName}.raw_unitig_gfa
+        ln ~{sampleName}.hap1.p_ctg.* ~{sampleName}.pat.contig_gfa
+        ln ~{sampleName}.hap2.p_ctg.* ~{sampleName}.mat.contig_gfa
+        ln *.bin ~{sampleName}.binFiles
+        
+        
+        # make archives
+        tar -cf ~{sampleName}.raw_unitig_gfa.tar ~{sampleName}.raw_unitig_gfa
+        tar -cf ~{sampleName}.pat.contig_gfa.tar ~{sampleName}.pat.contig_gfa
+        tar -cf ~{sampleName}.mat.contig_gfa.tar ~{sampleName}.mat.contig_gfa
+        tar -cf ~{sampleName}.binFiles.tar ~{sampleName}.binFiles
+        
         # compress
-        pigz -p~{threadCount} ~{sampleName}.ancillaryFiles.tar
+        pigz -p~{threadCount} ~{sampleName}.raw_unitig_gfa.tar
+        pigz -p~{threadCount} ~{sampleName}.pat.contig_gfa.tar
+        pigz -p~{threadCount} ~{sampleName}.mat.contig_gfa.tar
+        pigz -p~{threadCount} ~{sampleName}.binFiles.tar
     >>>
 
     runtime {
@@ -228,7 +244,10 @@ task HifiasmTask {
     output {
         File outputPatGfa = "~{sampleName}.hap1.p_ctg.gfa"
         File outputMatGfa = "~{sampleName}.hap2.p_ctg.gfa"
-        File outputAncillaryFiles = "~{sampleName}.ancillaryFiles.tar.gz"
+        File outputPatContigGfa = "~{sampleName}.pat.contig_gfa.tar.gz"
+        File outputMatContigGfa = "~{sampleName}.mat.contig_gfa.tar.gz"
+        File outputRawUnitigGfa = "~{sampleName}.raw_unitig_gfa.tar.gz"
+        File outputBinFiles = "~{sampleName}.binFiles.tar.gz"
     }
 }
 
@@ -261,10 +280,6 @@ task GfaTask {
         gfatools gfa2fa ~{patGfa} | pigz -p~{threadCount} > ~{sampleName}.pat.fa.gz &
         gfatools gfa2fa ~{matGfa} | pigz -p~{threadCount} > ~{sampleName}.mat.fa.gz &
         wait
-        # compress gfa files
-        pigz -c -p~{threadCount} ~{patGfa} > ~{sampleName}.pat.gfa.gz &
-        pigz -c -p~{threadCount} ~{matGfa} > ~{sampleName}.mat.gfa.gz &
-        wait
     >>>
 
     runtime {
@@ -279,7 +294,5 @@ task GfaTask {
     output {
         File outputPatFasta = "~{sampleName}.pat.fa.gz"
         File outputMatFasta = "~{sampleName}.mat.fa.gz"
-        File outputPatGfa = "~{sampleName}.pat.gfa.gz"
-        File outputMatGfa = "~{sampleName}.mat.gfa.gz"
     }
 }
