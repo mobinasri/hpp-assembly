@@ -61,7 +61,7 @@ workflow QCStatsFlow {
             String zones = zones
     }
 
-    task MergeTask {
+    call MergeTask {
         input:
             File patErrorStats = ErrorTask.patErrorStats ,
             File matErrorStats = ErrorTask.matErrorStats ,
