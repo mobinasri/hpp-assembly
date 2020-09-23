@@ -1,4 +1,4 @@
-on 1.0 
+version 1.0 
 
 workflow QCStatsFlow {
     input {
@@ -32,8 +32,8 @@ workflow QCStatsFlow {
             threadCount = threadCount ,
             dockerImage = dockerImage ,
             preemptible = preemptible,
-        	diskSize = diskSize,
-        	zones = zones
+            diskSize = diskSize,
+            zones = zones
     }
 
     output {
