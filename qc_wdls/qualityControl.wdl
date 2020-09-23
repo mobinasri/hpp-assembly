@@ -75,7 +75,7 @@ workflow QCStatsFlow {
             threadCount = 2 ,
             dockerImage = dockerImage ,
             preemptible = 1 ,
-            Int diskSize = 16 ,
+            diskSize = 16 ,
             String zones = zones
     }
  
