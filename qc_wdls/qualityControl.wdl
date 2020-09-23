@@ -20,61 +20,61 @@ workflow QCStatsFlow {
 
     call ErrorTask {
         input:
-            File patFasta = patFasta ,
-            File matFasta = matFasta ,
-            File patYak = patYak ,
-            File matYak = matYak ,
+            patFasta = patFasta ,
+            matFasta = matFasta ,
+            patYak = patYak ,
+            matYak = matYak ,
             # runtime configurations    
-            Int memSize = memSize ,
-            Int threadCount = threadCount ,
-            String dockerImage = dockerImage ,
-            Int preemptible = preemptible ,
-            Int diskSize = diskSize ,
-            String zones = zones
+            memSize = memSize ,
+            threadCount = threadCount ,
+            dockerImage = dockerImage ,
+            preemptible = preemptible ,
+            diskSize = diskSize ,
+            zones = zones
     }
 
     call GeneTask {
         input:
-            File patFasta = patFasta ,
-            File matFasta = matFasta ,
-            File genesFasta = genesFasta ,
-            File hs38Paf = hs38Paf,
+            patFasta = patFasta ,
+            matFasta = matFasta ,
+            genesFasta = genesFasta ,
+            hs38Paf = hs38Paf,
             # runtime configurations    
-            Int memSize = memSize ,
-            Int threadCount = threadCount ,
-            String dockerImage = dockerImage ,
-            Int preemptible = preemptible ,
-            Int diskSize = diskSize ,
-            String zones = zones
+            memSize = memSize ,
+            threadCount = threadCount ,
+            dockerImage = dockerImage ,
+            preemptible = preemptible ,
+            diskSize = diskSize ,
+            zones = zones
     }
 
     call ContiguityTask {
         input:
-            File patFasta = patFasta ,
-            File matFasta = matFasta ,
+            patFasta = patFasta ,
+            matFasta = matFasta ,
             # runtime configurations    
-            Int memSize = memSize ,
-            Int threadCount = threadCount ,
-            String dockerImage = dockerImage ,
-            Int preemptible = preemptible ,
-            Int diskSize = diskSize ,
-            String zones = zones
+            memSize = memSize ,
+            threadCount = threadCount ,
+            dockerImage = dockerImage ,
+            preemptible = preemptible ,
+            diskSize = diskSize ,
+            zones = zones
     }
 
     call MergeTask {
         input:
-            File patErrorStats = ErrorTask.patErrorStats ,
-            File matErrorStats = ErrorTask.matErrorStats ,
-            File patGeneStats = GeneTask.patGeneStats ,
-            File matGeneStats = GeneTask.matGeneStats ,
-            File patLenStats = ContiguityTask.patLenStats ,
-            File matLenStats = ContiguityTask.matLenStats ,
-            String childID = childID ,
+            patErrorStats = ErrorTask.patErrorStats ,
+            matErrorStats = ErrorTask.matErrorStats ,
+            patGeneStats = GeneTask.patGeneStats ,
+            matGeneStats = GeneTask.matGeneStats ,
+            patLenStats = ContiguityTask.patLenStats ,
+            matLenStats = ContiguityTask.matLenStats ,
+            childID = childID ,
             # runtime configurations    
-            Int memSize = 4 ,
-            Int threadCount = 2 ,
-            String dockerImage = dockerImage ,
-            Int preemptible = 1 ,
+            memSize = 4 ,
+            threadCount = 2 ,
+            dockerImage = dockerImage ,
+            preemptible = 1 ,
             Int diskSize = 16 ,
             String zones = zones
     }
