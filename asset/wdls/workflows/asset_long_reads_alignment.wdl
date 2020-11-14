@@ -1,6 +1,5 @@
 version 1.0 
 
-import "../tasks/bwa.wdl" as bwa
 import "../tasks/long_read_alinger.wdl" as long_read_aligner
 import "../tasks/merge_bams.wdl" as merge_bams
 import "../tasks/asset.wdl" as asset
