@@ -1,3 +1,5 @@
+version 1.0
+
 workflow runMapping {
     call alignment
 }
@@ -34,7 +36,7 @@ task alignment{
             meryl count k=15 output merylDB ~{assembly}
             meryl print greater-than distinct=0.9998 merylDB > repetitive_k15.txt
             ALIGNER_CMD="winnowmap -W repetitive_k15.txt"
-        elif [[ ~{alinger} == "minimap2" ]] ; then
+        elif [[ ~{aligner} == "minimap2" ]] ; then
             ALIGNER_CMD="minimap2"
         else
              echo "UNSUPPORTED ALIGNER (expect minimap2 or winnowmap): ~{aligner}"

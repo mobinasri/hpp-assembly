@@ -1,5 +1,7 @@
+version 1.0
+
 workflow runBWA {
-    call bwaIndex
+    call buildingIndex
 }
 
 task buildingIndex{
@@ -27,14 +29,14 @@ task buildingIndex{
         
         if [[ ~{assembly} =~ .*f(ast)?a\.gz$ ]] ; then    
             zcat ~{assembly} > asm.fa
-        elif [[ ~{readFile} =~ .*f(ast)?a$ ]] ; then
+        elif [[ ~{assembly} =~ .*f(ast)?a$ ]] ; then
             ln ~{assembly} asm.fa
         else
              echo "UNSUPPORTED READ FORMAT (expect .fa .fasta .fa.gz .fasta.gz): $(basename ~{assembly})"
              exit 1
         fi
-	
-	# build bwa index for the given assembly
+
+        # build bwa index for the given assembly
         bwa index asm.fa
         mkdir index
         mv asm.* index/
