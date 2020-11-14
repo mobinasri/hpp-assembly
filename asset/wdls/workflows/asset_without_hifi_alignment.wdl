@@ -23,7 +23,7 @@ workflow AssetWorkflow {
         Int memSize
         Int diskSize
         Int preemptible=1
-        String zones="us-west-2a"
+        String zones="us-west2-a"
     }
    
     #################################
