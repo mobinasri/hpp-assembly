@@ -244,12 +244,10 @@ workflow AssetWorkflow {
         File paternalOntBai = mergePaternalOntBams.mergedBai
         File maternalOntBam = mergeMaternalOntBams.mergedBam
         File maternalOntBai = mergeMaternalOntBams.mergedBai
-        # ASSET outputs
-        File maternalGapsBed = maternalHicAssetTask.gapsBed 
+        # ASSET outputs 
         File maternalHifiBed = maternalHifiAssetTask.supportBed
         File maternalOntBed =  maternalOntAssetTask.supportBed
 
-        File paternalGapsBed = paternalHicAssetTask.gapsBed
         File paternalHifiBed = paternalHifiAssetTask.supportBed
         File paternalOntBed =  paternalOntAssetTask.supportBed
     }
