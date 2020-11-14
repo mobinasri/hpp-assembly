@@ -279,7 +279,7 @@ workflow AssetWorkflow {
             sampleName = sampleName,
             sampleSuffix = "mat",
             dataType = "ont",
-            alignmentFiles = mergeMaternalOntBams.mergedBam,
+            alignmentFiles = [mergeMaternalOntBams.mergedBam],
             memSize = 32,
             threadCount = 8,
             diskSize = 512,
@@ -294,7 +294,7 @@ workflow AssetWorkflow {
             sampleName = sampleName,
             sampleSuffix = "pat",
             dataType = "ont",
-            alignmentFiles = mergePaternalOntBams.mergedBam,
+            alignmentFiles = [mergePaternalOntBams.mergedBam],
             memSize = 32,
             threadCount = 8,
             diskSize = 512,
@@ -311,7 +311,7 @@ workflow AssetWorkflow {
             sampleName = sampleName,
             sampleSuffix = "mat",
             dataType = "hifi",
-            alignmentFiles = mergeMaternalHifiBams.mergedBam,
+            alignmentFiles = [mergeMaternalHifiBams.mergedBam],
             memSize = 32,
             threadCount = 8,
             diskSize = 512,
@@ -326,7 +326,7 @@ workflow AssetWorkflow {
             sampleName = sampleName,
             sampleSuffix = "pat",
             dataType = "hifi",
-            alignmentFiles = mergePaternalHifiBams.mergedBam,
+            alignmentFiles = [mergePaternalHifiBams.mergedBam],
             memSize = 32,
             threadCount = 8,
             diskSize = 512,
@@ -338,11 +338,11 @@ workflow AssetWorkflow {
     ### HiC ###
  
     # find HiC-supportive regions for the maternal assembly
-    call ast_hicTask as maternalHicAssetTask{
+    call asset.ast_hicTask as maternalHicAssetTask{
         input:
             sampleName = sampleName,
             sampleSuffix = "mat",
-            bamFiles = mergeMaternalHicBams.mergedBam,
+            bamFiles = [mergeMaternalHicBams.mergedBam],
             assembly = maternalAssembly,
             memSize = 32,
             threadCount = 8,
@@ -353,11 +353,11 @@ workflow AssetWorkflow {
     }
     
     # find HiC-supportive regions for the paternal assembly
-    call ast_hicTask as paternalHicAssetTask{
+    call asset.ast_hicTask as paternalHicAssetTask{
         input:
             sampleName = sampleName,
             sampleSuffix = "pat",
-            bamFiles = mergePaternalHicBams.mergedBam,
+            bamFiles = [mergePaternalHicBams.mergedBam],
             assembly = paternalAssembly,
             memSize = 32,
             threadCount = 8,
