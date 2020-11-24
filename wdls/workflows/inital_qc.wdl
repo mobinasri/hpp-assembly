@@ -1,6 +1,6 @@
 version 1.0 
 
-workflow QCStatsFlow {
+workflow initialQC {
     input {
         File patFasta
         File matFasta
