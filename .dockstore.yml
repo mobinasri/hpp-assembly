@@ -3,9 +3,9 @@ workflows:
    -  name: TrioHifiasmAssembly
       subclass: WDL
       primaryDescriptorPath: /wdl/workflows/trio_hifiasm_assembly.wdl
-   -  name: AssetFullAlignment
-      subclass: WDL
-      primaryDescriptorPath: /wdl/workflows/asset_full_alignment.wdl
    -  name: InitialQC
       subclass: WDL
       primaryDescriptorPath: /wdl/workflows/initial_qc.wdl
+   -  name: AssetFullAlignment
+      subclass: WDL
+      primaryDescriptorPath: /wdl/workflows/asset_full_alignment.wdl
