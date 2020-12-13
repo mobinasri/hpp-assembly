@@ -1,3 +1,6 @@
+browser position chr22
+browser hide all
+track name="ASSET Paternal HG01123" description="ASSET Paternal HG01123" visibility=2 color=0,128,0
 chr1	0	2091	h1tg000027l:13496410-13505792	0	-
 chr1	0	2867	h1tg000052l:40912407-40933424	0	-
 chr1	0	2872	h1tg000105l:643268-652642	0	-
